@@ -16,8 +16,21 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha256-Z1K5uhUaJXA7Ll0XrZ/0JhX4lAtZFpT6jkKrEDT0drU=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.14.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.14.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误');
+                history.back();
+            }
+        }
+    })();
+</script>
+
 
     <meta name="description" content="山不让尘，川不辞盈。">
 <meta property="og:type" content="website">
@@ -60,6 +73,9 @@
       <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
@@ -70,20 +86,51 @@
       <h1 class="site-title">Jugier's Blog</h1>
       <i class="logo-line"></i>
     </a>
-      <p class="site-subtitle" itemprop="description">天可补，海可填，南山可移。日月既往，不可复追。</p>
+      <p class="site-subtitle" itemprop="description">天可补，海可填，南山可移。<br>日月既往，不可复追。</p>
   </div>
 
   <div class="site-nav-right">
     <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
 </div>
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
 
 
 
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
 
 </header>
         
@@ -108,6 +155,8 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jugier Wang"
+      src="/images/avatar_2.jpg">
   <p class="site-author-name" itemprop="name">Jugier Wang</p>
   <div class="site-description" itemprop="description">山不让尘，川不辞盈。</div>
 </div>
@@ -119,8 +168,21 @@
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
   </nav>
 </div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wangjie-star" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wangjie-star" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/jugier@outlook.com" title="E-Mail → jugier@outlook.com" rel="noopener me"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
 
         </div>
       </div>
@@ -142,10 +204,10 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/02/04/CentOS-7%E8%AE%BE%E7%BD%AE%E9%9D%99%E6%80%81IP/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/post/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar_2.jpg">
       <meta itemprop="name" content="Jugier Wang">
     </span>
 
@@ -160,7 +222,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/02/04/CentOS-7%E8%AE%BE%E7%BD%AE%E9%9D%99%E6%80%81IP/" class="post-title-link" itemprop="url">CentOS-7设置静态IP</a>
+          <a href="/post/undefined.html" class="post-title-link" itemprop="url">CentOS-7设置静态IP</a>
         </h2>
 
         <div class="post-meta-container">
@@ -172,10 +234,25 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2023-02-04 17:27:29 / 修改时间：17:28:00" itemprop="dateCreated datePublished" datetime="2023-02-04T17:27:29+08:00">2023-02-04</time>
+      <time title="创建时间：2023-02-04 17:27:29 / 修改时间：19:33:20" itemprop="dateCreated datePublished" datetime="2023-02-04T17:27:29+08:00">2023-02-04</time>
     </span>
 
   
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
 </div>
 
         </div>
@@ -185,12 +262,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p><strong>vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-ens33</strong></p>
+          <p><strong>vim /etc/sysconfig/network-scripts/ifcfg-ens33</strong></p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">TYPE=Ethernet</span><br><span class="line">PROXY_METHOD=none</span><br><span class="line">BROWSER_ONLY=no</span><br><span class="line">BOOTPROTO=<span class="type">static</span></span><br><span class="line">DEFROUTE=yes</span><br><span class="line">IPV4_FAILURE_FATAL=no</span><br><span class="line">IPV6INIT=yes</span><br><span class="line">IPV6_AUTOCONF=yes</span><br><span class="line">IPV6_DEFROUTE=yes</span><br><span class="line">IPV6_FAILURE_FATAL=no</span><br><span class="line">IPV6_ADDR_GEN_MODE=stable-privacy</span><br><span class="line">NAME=ens33</span><br><span class="line">DEVICE=ens33</span><br><span class="line">ONBOOT=yes</span><br><span class="line">IPADDR=<span class="number">192.168</span><span class="number">.1</span><span class="number">.128</span></span><br><span class="line">NETMASK=<span class="number">255.255</span><span class="number">.255</span><span class="number">.0</span></span><br><span class="line">GATEWAY=<span class="number">192.168</span><span class="number">.1</span><span class="number">.2</span></span><br><span class="line">DNS1=<span class="number">192.168</span><span class="number">.1</span><span class="number">.2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p>service network restart</p>
 <p>设置静态IP脚本:setIP.sh</p>
-<p>它的参数就是要设置的IP,如.&#x2F;setIP.sh 192.168.1.1</p>
+<p>它的参数就是要设置的IP,如./setIP.sh 192.168.1.1</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">FILE=&quot;/etc/sysconfig/network-scripts/ifcfg-ens33&quot;</span><br><span class="line">TEXT=&quot;TYPE=Ethernet\n\</span><br><span class="line">PROXY_METHOD=none\n\</span><br><span class="line">BROWSER_ONLY=no\n\</span><br><span class="line">BOOTPROTO=static\n\</span><br><span class="line">DEFROUTE=yes\n\</span><br><span class="line">IPV4_FAILURE_FATAL=no\n\</span><br><span class="line">IPV6INIT=yes\n\</span><br><span class="line">IPV6_AUTOCONF=yes\n\</span><br><span class="line">IPV6_DEFROUTE=yes\n\</span><br><span class="line">IPV6_FAILURE_FATAL=no\n\</span><br><span class="line">IPV6_ADDR_GEN_MODE=stable-privacy\n\</span><br><span class="line">NAME=ens33\n\</span><br><span class="line">DEVICE=ens33\n\</span><br><span class="line">ONBOOT=yes\n\</span><br><span class="line">IPADDR=192.168.119.150\n\</span><br><span class="line">NETMASK=255.255.255.0\n\</span><br><span class="line">GATEWAY=192.168.119.2\n\</span><br><span class="line">DNS1=192.168.119.2&quot;</span><br><span class="line"></span><br><span class="line">IPADDR=&quot;IPPADDR=$1&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">IPADDR=$1</span><br><span class="line">_ckIPaddr () &#123;</span><br><span class="line">        ckStep1=`echo $1 | awk -F&quot;.&quot; &#x27;&#123;print NF&#125;&#x27;`</span><br><span class="line">        if [ $ckStep1 -eq 4 ] || [ $ckStep1 -eq 6 ]</span><br><span class="line">        then</span><br><span class="line">                ckStep2=`echo $1 | awk -F&quot;.&quot; &#x27;&#123;if ($1!=0 &amp;&amp; $NF!=0) split ($0,IPNUM,&quot;.&quot;)&#125; END \</span><br><span class="line">        &#123; for (k in IPNUM) if (IPNUM[k]==0) print IPNUM[k]; else if (IPNUM[k]!=0 &amp;&amp; IPNUM[k]!~/[a-z|A-Z]/ &amp;&amp; length(IPNUM[k])&lt;=3 &amp;&amp;</span><br><span class="line">IPNUM[k]&lt;255 &amp;&amp; IPNUM[k]!~/^0/) print IPNUM[k]&#125;&#x27;| wc -l`</span><br><span class="line">                if [ $ckStep2 -eq $ckStep1 ]</span><br><span class="line">                then</span><br><span class="line">                        echo 0</span><br><span class="line">                else</span><br><span class="line">                        echo 1</span><br><span class="line">                fi</span><br><span class="line">        else</span><br><span class="line">                echo 1</span><br><span class="line">        fi</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">CK_IPADDR=`_ckIPaddr $IPADDR`</span><br><span class="line"></span><br><span class="line">if [ $CK_IPADDR -eq 1 ]</span><br><span class="line">then</span><br><span class="line"></span><br><span class="line">     echo &quot;The string $IPADDR is not a correct ipaddr!!!&quot;</span><br><span class="line">     exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">echo &quot;&quot;  &gt; $FILE</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">echo -e $TEXT &gt; $FILE</span><br><span class="line"></span><br><span class="line">IPADDRSTR=&quot;IPADDR=&quot;$IPADDR</span><br><span class="line">echo -e $IPADDRSTR &gt;&gt; $FILE</span><br><span class="line"></span><br><span class="line">echo &quot;NETMASK=255.255.255.0&quot; &gt;&gt; $FILE</span><br><span class="line"></span><br><span class="line">GATEWAY=&quot;GATEWAY=&quot;</span><br><span class="line">DNS1=&quot;DNS1=&quot;</span><br><span class="line"></span><br><span class="line">sum=0</span><br><span class="line">IPADDR=$&#123;IPADDR//./ &#125;    </span><br><span class="line">for element in $IPADDR</span><br><span class="line">do</span><br><span class="line">    let &quot;sum++&quot;</span><br><span class="line">    if [ $sum -ge 4 ];then</span><br><span class="line">        break</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    GATEWAY=$GATEWAY$element&quot;.&quot;</span><br><span class="line">    DNS1=$DNS1$element&quot;.&quot;    </span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">GATEWAY=$GATEWAY&quot;2&quot;</span><br><span class="line">DNS1=$DNS1&quot;2&quot;</span><br><span class="line"></span><br><span class="line">echo -e $GATEWAY &gt;&gt; $FILE</span><br><span class="line">echo -e $DNS1 &gt;&gt; $FILE</span><br><span class="line"></span><br><span class="line">service network restart</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
       
@@ -218,10 +294,10 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/02/04/CentOS-7%E8%AE%BE%E7%BD%AESamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/post/undefined.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar_2.jpg">
       <meta itemprop="name" content="Jugier Wang">
     </span>
 
@@ -236,7 +312,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/02/04/CentOS-7%E8%AE%BE%E7%BD%AESamba%E5%85%B1%E4%BA%AB%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">CentOS-7设置Samba共享目录</a>
+          <a href="/post/undefined.html" class="post-title-link" itemprop="url">CentOS-7设置Samba共享目录</a>
         </h2>
 
         <div class="post-meta-container">
@@ -248,10 +324,25 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2023-02-04 17:01:13 / 修改时间：17:01:37" itemprop="dateCreated datePublished" datetime="2023-02-04T17:01:13+08:00">2023-02-04</time>
+      <time title="创建时间：2023-02-04 17:01:13 / 修改时间：19:32:42" itemprop="dateCreated datePublished" datetime="2023-02-04T17:01:13+08:00">2023-02-04</time>
     </span>
 
   
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>916</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
 </div>
 
         </div>
@@ -261,28 +352,23 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="1、安装Samba服务"><a href="#1、安装Samba服务" class="headerlink" title="1、安装Samba服务"></a><strong>1、安装Samba服务</strong></h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#下载安装Samba</span><br><span class="line">yum -y install samba</span><br><span class="line"># 查看yum源中Samba版本</span><br><span class="line">yum list | grep samba</span><br><span class="line"># 查看samba的安装情况</span><br><span class="line">rpm -qa | grep samba</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
+          <p><strong>1、安装Samba服务</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#下载安装Samba</span><br><span class="line">yum -y install samba</span><br><span class="line"># 查看yum源中Samba版本</span><br><span class="line">yum list | grep samba</span><br><span class="line"># 查看samba的安装情况</span><br><span class="line">rpm -qa | grep samba</span><br></pre></td></tr></table></figure>
 <p><strong>2. 启动Samba服务</strong></p>
 <p>Samba服务安装完成之后有两种方法启动:</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">service smb start</span><br><span class="line"># 或者</span><br><span class="line">systemctl start smb.service</span><br></pre></td></tr></table></figure>
-
 <p>设置smb服务开机启动</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable smb.service</span><br></pre></td></tr></table></figure>
-
 <p><strong>3. 关闭防火墙</strong></p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#执行关闭命令：</span><br><span class="line">systemctl stop firewalld.service</span><br><span class="line"></span><br><span class="line">#执行开机禁用防火墙自启命令：</span><br><span class="line">systemctl disable firewalld.service</span><br></pre></td></tr></table></figure>
-
 <p><strong>4.修改Samba配置</strong></p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*** vim /etc/samba/smb.conf</span></span><br><span class="line"><span class="comment"> *** 其中[CentOS]下的path要修改为共享的目录 ***/</span></span><br><span class="line">[global]</span><br><span class="line">workgroup = MYGROUP</span><br><span class="line">server string = Samba Server Version %v</span><br><span class="line">log file = /var/log/samba/log.%m</span><br><span class="line">max log size = <span class="number">50</span></span><br><span class="line">security = user</span><br><span class="line">passdb backend = tdbsam</span><br><span class="line">load printers = yes</span><br><span class="line">cups options = raw</span><br><span class="line"></span><br><span class="line">[printers]</span><br><span class="line">comment = All Printers</span><br><span class="line">path = /var/spool/samba</span><br><span class="line">browseable = no</span><br><span class="line">guest ok = no</span><br><span class="line">writable = no</span><br><span class="line">printable = yes</span><br><span class="line"></span><br><span class="line">[CentOS]</span><br><span class="line">comment = myshare</span><br><span class="line">browseable = yes</span><br><span class="line">path = /home/share</span><br><span class="line">writable = yes</span><br></pre></td></tr></table></figure>
-
 <p><strong>5.将访问的账户添加到samba的账户中</strong></p>
 <p>smbpasswd 参数: -a: 添加 -x: 删除 -d: 禁用 -e: 启用</p>
 <p>smbpasswd -a 系统用户名</p>
 <p>**6.确保 setlinux 关闭 **</p>
 <p>默认 SELinux 禁止网络上对 Samba 服务器上的共享目录进行写操作</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0</span><br></pre></td></tr></table></figure>
-
 <p><strong>7.重启samba服务</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service smb restart</span><br></pre></td></tr></table></figure>
 
@@ -306,7 +392,7 @@
 
 </div>
   </main>
-
+<!--
   <footer class="footer">
     <div class="footer-inner">
 
@@ -319,19 +405,29 @@
   </span>
   <span class="author" itemprop="copyrightHolder">Jugier Wang</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">3k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
 
     </div>
   </footer>
-
+-->
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
   <div class="back-to-top" role="button" aria-label="返回顶部">
     <i class="fa fa-arrow-up fa-lg"></i>
     <span>0%</span>
@@ -344,11 +440,18 @@
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
-  
+<script src="/js/code-unfold.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
 
 
+
+  <script src="/js/third-party/fancybox.js"></script>
 
 
   
