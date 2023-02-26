@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-j.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-j.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-j.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css?family=Noto+Serif+SC:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha256-Z1K5uhUaJXA7Ll0XrZ/0JhX4lAtZFpT6jkKrEDT0drU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wangjie-star.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.14.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","Available values":"gitalk","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":{"order":-2}}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideDownBigOut"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":true,"preload":true}}</script><script src="/js/config.js"></script>
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+    <meta name="description" content="一、xlog存储结构 ​		每个XLOG文件有一个ID，一个逻辑上的xlog文件物理上被分割成一个个固定大小的段（默认16MB）。xlog文件号和段号可以唯一确定某个段文件。确定日志文件内的一个日志记录的地址时，只需要xlog文件号和日志记录在该文件内的偏移量即可。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PostgreSQL-xlog">
+<meta property="og:url" content="https://wangjie-star.github.io/b3574ee3d8f5/index.html">
+<meta property="og:site_name" content="Jugier&#39;s Blog">
+<meta property="og:description" content="一、xlog存储结构 ​		每个XLOG文件有一个ID，一个逻辑上的xlog文件物理上被分割成一个个固定大小的段（默认16MB）。xlog文件号和段号可以唯一确定某个段文件。确定日志文件内的一个日志记录的地址时，只需要xlog文件号和日志记录在该文件内的偏移量即可。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-07T06:14:13.000Z">
+<meta property="article:modified_time" content="2023-02-07T12:36:45.463Z">
+<meta property="article:author" content="Jugier Wang">
+<meta property="article:tag" content="DBMS">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wangjie-star.github.io/b3574ee3d8f5/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wangjie-star.github.io/b3574ee3d8f5/","path":"b3574ee3d8f5/","title":"PostgreSQL-xlog"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入查看密码') !== ''){
+                alert('密码不正确,请询问主编大大！');
+                history.back();
+            }
+        }
+    })();
+</script>
+<title>PostgreSQL-xlog | Jugier's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Jugier's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">天可补，海可填，南山可移。<br>日月既往，不可复追。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-book fa-fw"></i>书单</a></li><li class="menu-item menu-item-tools"><a href="/tools/" rel="section"><i class="fa fa-tools fa-fw"></i>工具</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81xlog%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="nav-text">一、xlog存储结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81xlog%E6%97%A5%E5%BF%97%E9%A1%B5%E9%9D%A2%E5%A4%B4%E9%83%A8%E4%BF%A1%E6%81%AF"><span class="nav-text">1、xlog日志页面头部信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81xlog%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E7%BB%93%E6%9E%84%E4%BF%A1%E6%81%AF"><span class="nav-text">2、xlog日志记录结构信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%EF%BC%89XLogRecord"><span class="nav-text">1）XLogRecord</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%EF%BC%89XLOG-Record-data"><span class="nav-text">2）XLOG Record data</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%881%EF%BC%89BLOCK"><span class="nav-text">（1）BLOCK</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E2%91%A0XLogRecordBlockHeader"><span class="nav-text">①XLogRecordBlockHeader</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E2%91%A1XLogRecordBlockImageHeader"><span class="nav-text">②XLogRecordBlockImageHeader</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E2%91%A2XLogRecordBlockCompressHeader"><span class="nav-text">③XLogRecordBlockCompressHeader</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E2%91%A3RelFileNode"><span class="nav-text">④RelFileNode</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E2%91%A4BlockNumber"><span class="nav-text">⑤BlockNumber</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%882%EF%BC%89XLogRecordDataHeaderLong-XLogRecordDataHeaderShort"><span class="nav-text">（2）XLogRecordDataHeaderLong&#x2F;XLogRecordDataHeaderShort</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%883%EF%BC%89block-data%EF%BC%88%E5%8C%BA%E5%9D%97%E6%95%B0%E6%8D%AE%E4%B8%8EXLogRecordBlockHeader%E5%AF%B9%E5%BA%94%EF%BC%89"><span class="nav-text">（3）block data（区块数据与XLogRecordBlockHeader对应）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%884%EF%BC%89main-data%EF%BC%88%E4%B8%BB%E6%95%B0%E6%8D%AE%E4%B8%8EXLogRecordDataHeader%E5%AF%B9%E5%BA%94%EF%BC%89"><span class="nav-text">（4）main data（主数据与XLogRecordDataHeader对应）</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81xlog%E8%AE%B0%E5%BD%95%E5%86%99%E5%85%A5"><span class="nav-text">二、xlog记录写入</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jugier Wang"
+      src="/images/avatar_2.jpg">
+  <p class="site-author-name" itemprop="name">Jugier Wang</p>
+  <div class="site-description" itemprop="description">山不让尘，川不辞盈。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wangjie-star" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wangjie-star" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jugier@outlook.com" title="E-Mail → mailto:jugier@outlook.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://postgres.cn/docs/14/sql-commands.html" title="http:&#x2F;&#x2F;postgres.cn&#x2F;docs&#x2F;14&#x2F;sql-commands.html" rel="noopener" target="_blank">PostgreSQL中文手册</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://python3-cookbook.readthedocs.io/zh_CN/latest/index.html#" title="https:&#x2F;&#x2F;python3-cookbook.readthedocs.io&#x2F;zh_CN&#x2F;latest&#x2F;index.html#" rel="noopener" target="_blank">Python3-cookbook</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://chanshiyu.com/#/" title="https:&#x2F;&#x2F;chanshiyu.com&#x2F;#&#x2F;" rel="noopener" target="_blank">蟬時雨</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://aciano.top/" title="https:&#x2F;&#x2F;aciano.top&#x2F;" rel="noopener" target="_blank">Aciano</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wangjie-star.github.io/b3574ee3d8f5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar_2.jpg">
+      <meta itemprop="name" content="Jugier Wang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jugier's Blog">
+      <meta itemprop="description" content="山不让尘，川不辞盈。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="PostgreSQL-xlog | Jugier's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PostgreSQL-xlog
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-02-07 14:14:13 / 修改时间：20:36:45" itemprop="dateCreated datePublished" datetime="2023-02-07T14:14:13+08:00">2023-02-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PostgreSQL/" itemprop="url" rel="index"><span itemprop="name">PostgreSQL</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="一、xlog存储结构">一、xlog存储结构</h2>
+<p>​		每个XLOG文件有一个ID，一个逻辑上的xlog文件物理上被分割成一个个固定大小的段（默认16MB）。xlog文件号和段号可以唯一确定某个段文件。确定日志文件内的一个日志记录的地址时，只需要xlog文件号和日志记录在该文件内的偏移量即可。</p>
+<span id="more"></span>
+<p>​		对于每一个Xlog文件第一个段的第一个页面是一个长头部（Long Header），一个xlog文件头部是不是长头部，可以由其头部XLogPageHeaderData的标志位xlp_info确定出来，如果是长头部，则：<br>
+XLogPageHeader page;<br>
+page-&gt;xlp_info = XLP_LONG_HEADER;</p>
+<h3 id="1、xlog日志页面头部信息">1、xlog日志页面头部信息</h3>
+<p>​		xlog日志文件分为许多的逻辑段，每一个段文件又分成许多个页面，每一个页面大小为一个块的大小。对于每一个日志页面，需要在其头部写一个头部信息XLogPageHeaderData，其结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_PAGE_MAGIC 0xD093	<span class="comment">/* can be used as WAL version indicator */</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogPageHeaderData</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint16		xlp_magic;		<span class="comment">/* 用于正确性检查的魔数 */</span></span><br><span class="line">	uint16		xlp_info;		<span class="comment">/* 标记位 */</span></span><br><span class="line">	TimeLineID	xlp_tli;		<span class="comment">/* 页面中第一条记录的时间线ID */</span></span><br><span class="line">	XLogRecPtr	xlp_pageaddr;	<span class="comment">/* 当前页面的XLOG地址 */</span></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * 当当前页面放不下一条完整记录时，我们会在下一个页面继续放，xlp_rem_len存储了先前页面</span></span><br><span class="line"><span class="comment">	 * 记录剩余的字节数。注意，xlp_rem_len包含了备份区块的数据，也就是说它会在第一个首部跟</span></span><br><span class="line"><span class="comment">	 * 踪xl_tot_len而不是xl_len。还要注意，数据不一定是对齐的。</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	uint32		xlp_rem_len;	<span class="comment">/* total len of remaining data for record */</span></span><br><span class="line">&#125; XLogPageHeaderData;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SizeOfXLogShortPHD	MAXALIGN(sizeof(XLogPageHeaderData))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> XLogPageHeaderData *XLogPageHeader;</span><br></pre></td></tr></table></figure>
+<p>​		如果一个页面是一个逻辑段文件的第一个页面，那么在页面头部信息标志位会设置XLP_LONG_HEADER标记，那么将在原页面头部信息的基础上使用一个长的XLOG页面头部XLogLongPageHeaderData，其结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 当xlp_info设置了XLP_LONG_HEADER标记位时，我们将在页首部中存储额外的字段。</span></span><br><span class="line"><span class="comment"> * (通常是在XLOG文件中的第一个页面中)额外的字段用于确保文件的正确性。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogLongPageHeaderData</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	XLogPageHeaderData <span class="built_in">std</span>;		<span class="comment">/* 标准首部 */</span></span><br><span class="line">	uint64		xlp_sysid;		<span class="comment">/* 来自pg_control中的系统标识符 */</span></span><br><span class="line">	uint32		xlp_seg_size;	<span class="comment">/* 交叉校验 */</span></span><br><span class="line">	uint32		xlp_xlog_blcksz;<span class="comment">/* 交叉校验 */</span></span><br><span class="line">&#125; XLogLongPageHeaderData;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SizeOfXLogLongPHD	MAXALIGN(sizeof(XLogLongPageHeaderData))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> XLogLongPageHeaderData *XLogLongPageHeader;</span><br></pre></td></tr></table></figure>
+<h3 id="2、xlog日志记录结构信息">2、xlog日志记录结构信息</h3>
+<p>​	XLOG Record由两部分组成，第一部分是XLOG Record的头部信息，大小固定（24 Bytes），对应的结构体是<strong>XLogRecord</strong>；第二部分是<strong>XLOG Record data</strong>。</p>
+<p>xlog记录存储布局：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Fixed-size <span class="title function_">header</span> <span class="params">(XLogRecord <span class="keyword">struct</span>)</span></span><br><span class="line">XLogRecordBlockHeader <span class="keyword">struct</span></span><br><span class="line">XLogRecordBlockHeader <span class="keyword">struct</span></span><br><span class="line">…</span><br><span class="line">XLogRecordDataHeader[Short|Long] <span class="keyword">struct</span></span><br><span class="line">block data</span><br><span class="line">block data</span><br><span class="line">…</span><br><span class="line">main data</span><br></pre></td></tr></table></figure>
+<h4 id="1）XLogRecord">1）XLogRecord</h4>
+<p><strong>XLOG Record</strong>按存储的数据内容来划分，大体可以分为三类：</p>
+<ul>
+<li>
+<p>Record for backup block：存储full-write-page的block，这种类型Record是为了解决page部分写的问题。在checkpoint完成后第一次修改数据page，在记                   											   录此变更写入事务日志文件时整页写入（需设置参数full_page_write，默认为打开）；</p>
+</li>
+<li>
+<p>Record for tuple data block：存储page中的tuple变更，使用这种类型的Record记录；</p>
+</li>
+<li>
+<p>Record for Checkpoint：在checkpoint发生时，在事务日志文件中记录checkpoint信息。</p>
+</li>
+</ul>
+<p>XLogRecord记录了Xlog记录的相关控制信息:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//日志之间有链接关系，xl_prev指向上一条日志的起始位置，下一条日志的位置用xl_tot_len可以找到，日志之间形成“双向链表”。</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecord</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">//整条XLog记录的长度</span></span><br><span class="line">	uint32		xl_tot_len;		<span class="comment">/* total len of entire record */</span></span><br><span class="line">    <span class="comment">//事务ID</span></span><br><span class="line">	TransactionId xl_xid;		<span class="comment">/* xact id */</span></span><br><span class="line">    <span class="comment">//上一条日志的LSN</span></span><br><span class="line">	XLogRecPtr	xl_prev;		<span class="comment">/* ptr to previous record in log */</span></span><br><span class="line">    <span class="comment">//产生这个记录的动作，xl_info低4位保存flag信息，高4位保存日志动作信息。</span></span><br><span class="line">	uint8		xl_info;		<span class="comment">/* flag bits, see below */</span></span><br><span class="line">    <span class="comment">//日志记录对应的资源管理器</span></span><br><span class="line">	RmgrId		xl_rmid;		<span class="comment">/* resource manager for this record */</span></span><br><span class="line">	<span class="comment">/* 2 bytes of padding here, initialize to zero */</span></span><br><span class="line">    <span class="comment">//本记录的CRC</span></span><br><span class="line">	pg_crc32c	xl_crc;			<span class="comment">/* CRC for this record */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* XLogRecordBlockHeaders and XLogRecordDataHeader follow, no padding */</span></span><br><span class="line"></span><br><span class="line">&#125; XLogRecord;</span><br></pre></td></tr></table></figure>
+<p>其中，xl_info被资源管理器使用，表示该日志是哪种类型的日志，其取值如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* XLOG info values for XLOG rmgr */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_CHECKPOINT_SHUTDOWN		0x00</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_CHECKPOINT_ONLINE			0x10</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_NOOP						0x20</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_NEXTOID					0x30</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_SWITCH						0x40</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_BACKUP_END					0x50</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_PARAMETER_CHANGE			0x60</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_RESTORE_POINT				0x70</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_FPW_CHANGE					0x80</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_END_OF_RECOVERY			0x90</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_FPI_FOR_HINT				0xA0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_FPI						0xB0</span></span><br><span class="line"><span class="comment">/* 0xC0 is used in Postgres 9.5-11 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> XLOG_OVERWRITE_CONTRECORD		0xD0</span></span><br></pre></td></tr></table></figure>
+<h4 id="2）XLOG-Record-data">2）XLOG Record data</h4>
+<p><strong>XLOG Record data</strong>是存储实际数据的地方，由以下几部分组成：</p>
+<ul>
+<li>
+<p>0…N个XLogRecordBlockHeader，每一个XLogRecordBlockHeader对应一个block data；</p>
+</li>
+<li>
+<p>XLogRecordDataHeader[Short|Long]，如数据大小&lt;256 Bytes，则使用Short格式，否则使用Long格式；</p>
+</li>
+<li>
+<p>block data：full-write-page data和tuple data。对于full-write-page data，如启用了压缩，则数据压缩存储，压缩后该page相关的元数据存储在XLogRecordBlockCompressHeader中。block data的个数和XLogRecordBlockHeader对应；</p>
+</li>
+<li>
+<p>main data： checkpoint等日志数据.</p>
+</li>
+</ul>
+<hr>
+<h5 id="（1）BLOCK">（1）BLOCK</h5>
+<h6 id="①XLogRecordBlockHeader">①XLogRecordBlockHeader</h6>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecordBlockHeader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">//【一个记录中可以有多个block（MAX: 32），此id是block的序号】</span></span><br><span class="line">	uint8		id;				<span class="comment">/* block reference ID */</span></span><br><span class="line">    <span class="comment">//【关系中的分支，以及标记位】</span></span><br><span class="line">	uint8		fork_flags;		<span class="comment">/* fork within the relation, and flags */</span></span><br><span class="line">    <span class="comment">//【决定tupledata中存储的数据的长度(不包括page image)】</span></span><br><span class="line">	uint16		data_length;	<span class="comment">/* number of payload bytes (not including page</span></span><br><span class="line"><span class="comment">								 * image) */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* If BKPBLOCK_HAS_IMAGE, an XLogRecordBlockImageHeader struct follows */</span></span><br><span class="line">	<span class="comment">/* If BKPBLOCK_SAME_REL is not set, a RelFileNode follows */</span></span><br><span class="line">	<span class="comment">/* BlockNumber follows */</span></span><br><span class="line">&#125; XLogRecordBlockHeader;</span><br></pre></td></tr></table></figure>
+<hr>
+<h6 id="②XLogRecordBlockImageHeader">②XLogRecordBlockImageHeader</h6>
+<p>wal记录是一个full page write记录时，存在此结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecordBlockImageHeader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">//【保存的page的总长度（去除空洞数据、且压缩后的长度）】</span></span><br><span class="line">	uint16		length;			<span class="comment">/* number of page image bytes */</span></span><br><span class="line">    <span class="comment">//【空洞前面的字节数】</span></span><br><span class="line">	uint16		hole_offset;	<span class="comment">/* number of bytes before &quot;hole&quot; */</span></span><br><span class="line">    <span class="comment">//【标志位，记录是否包含空洞数据，是否进行了压缩】</span></span><br><span class="line">	uint8		bimg_info;		<span class="comment">/* flag bits, see below */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * If BKPIMAGE_HAS_HOLE and BKPIMAGE_IS_COMPRESSED, an</span></span><br><span class="line"><span class="comment">	 * XLogRecordBlockCompressHeader struct follows.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">&#125; XLogRecordBlockImageHeader</span><br><span class="line"></span><br><span class="line"><span class="comment">// bimg_info可能的取值如下：</span></span><br><span class="line"><span class="comment">/* Information stored in bimg_info */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BKPIMAGE_HAS_HOLE		0x01	<span class="comment">/* page image has &quot;hole&quot; */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BKPIMAGE_IS_COMPRESSED	0x02	<span class="comment">/* page image is compressed */</span></span></span><br></pre></td></tr></table></figure>
+<h6 id="③XLogRecordBlockCompressHeader">③XLogRecordBlockCompressHeader</h6>
+<p>此结构记录空洞数据的大小</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Extra header information used when page image has &quot;hole&quot; and</span></span><br><span class="line"><span class="comment"> * is compressed.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecordBlockCompressHeader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint16		hole_length;	<span class="comment">/* number of bytes in &quot;hole&quot; */</span></span><br><span class="line">&#125; XLogRecordBlockCompressHeader;</span><br></pre></td></tr></table></figure>
+<h6 id="④RelFileNode">④RelFileNode</h6>
+<p>此结构记录了此block所属的表。如果当前block与前一个block来源于同一个表时，那么fork_flags中就不会有BKPBLOCK_SAME_REL标志位</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">RelFileNode</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	Oid			spcNode;		<span class="comment">/* tablespace */</span></span><br><span class="line">	Oid			dbNode;			<span class="comment">/* database */</span></span><br><span class="line">	Oid			relNode;		<span class="comment">/* relation */</span></span><br><span class="line">&#125; RelFileNode;</span><br></pre></td></tr></table></figure>
+<h6 id="⑤BlockNumber">⑤BlockNumber</h6>
+<p>记录此block记录的page的块号。</p>
+<hr>
+<h5 id="（2）XLogRecordDataHeaderLong-XLogRecordDataHeaderShort">（2）XLogRecordDataHeaderLong/XLogRecordDataHeaderShort</h5>
+<p>此结构被record中的maindata(checkpoint等日志数据)部分使用，当maindata的size小于256时使用XLogRecordDataHeaderShort结构<br>
+否则使用XLogRecordDataHeaderLong结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecordDataHeaderShort</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint8		id;				<span class="comment">/* XLR_BLOCK_ID_DATA_SHORT */</span></span><br><span class="line">	uint8		data_length;	<span class="comment">/* number of payload bytes */</span></span><br><span class="line">&#125;	XLogRecordDataHeaderShort;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">XLogRecordDataHeaderLong</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint8		id;				<span class="comment">/* XLR_BLOCK_ID_DATA_LONG */</span></span><br><span class="line">	<span class="comment">/* followed by uint32 data_length, unaligned */</span></span><br><span class="line">&#125;	XLogRecordDataHeaderLong;</span><br></pre></td></tr></table></figure>
+<h5 id="（3）block-data（区块数据与XLogRecordBlockHeader对应）">（3）block data（区块数据与XLogRecordBlockHeader对应）</h5>
+<p>block data包含full-write-page data（全页写日志记录）和tuple data（更新日志记录）两种类型数据</p>
+<h5 id="（4）main-data（主数据与XLogRecordDataHeader对应）">（4）main data（主数据与XLogRecordDataHeader对应）</h5>
+<p>main data部分保存非buff性的数据，比如checkpoint等日志数据.</p>
+<h2 id="二、xlog记录写入">二、xlog记录写入</h2>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Jugier Wang
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://wangjie-star.github.io/b3574ee3d8f5/" title="PostgreSQL-xlog">https://wangjie-star.github.io/b3574ee3d8f5/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/DBMS/" rel="tag"><i class="fa fa-tag"></i> DBMS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/652ad583bb6c/" rel="prev" title="CentOS-7设置命令行显示PS1">
+                  <i class="fa fa-chevron-left"></i> CentOS-7设置命令行显示PS1
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/13ddc1c017f3/" rel="next" title="PostgreSQL-并发控制">
+                  PostgreSQL-并发控制 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+<!-- 文章结束表示语-->
+    <div>
+      
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      
+    </div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+<!--
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jugier Wang</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">21k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">19 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+
+    </div>
+  </footer>
+-->
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/wangjie-star" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="https://cdnjs.cloudflare.com/ajax/libs/ribbon.js/1.0.2/ribbon.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+
+
+
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/pjax.js"></script>
+
+<script src="/js/code-unfold.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://wangjie-star.github.io/b3574ee3d8f5/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wangjie-star","repo":"wangjie-star.github.io","client_id":"a9ec7557402cca36f895","client_secret":"debbd767d2b735d34c48b5188c1e77ebb96a4b37","admin_user":"wangjie-star","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"1dd654bcba93c0598f93174c2a1d6ebd"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+ 
+</body>
+</html>

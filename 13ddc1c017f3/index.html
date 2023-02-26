@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-j.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-j.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-j.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css?family=Noto+Serif+SC:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha256-Z1K5uhUaJXA7Ll0XrZ/0JhX4lAtZFpT6jkKrEDT0drU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wangjie-star.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.14.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","Available values":"gitalk","active":null,"storage":true,"lazyload":false,"nav":{"gitalk":{"order":-2}}},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideDownBigOut"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":true,"preload":true}}</script><script src="/js/config.js"></script>
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+    <meta name="description" content="一、事务标识 当事务开始时，事务管理器会为其分配一个事务标识（txid）的唯一标识符。 PostgreSQL有三个特殊txid:  0标识无效的txid； 1表示初始启动的txid，仅用于数据库集群的初始化过程； 2表示冻结的txid。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PostgreSQL-并发控制">
+<meta property="og:url" content="https://wangjie-star.github.io/13ddc1c017f3/index.html">
+<meta property="og:site_name" content="Jugier&#39;s Blog">
+<meta property="og:description" content="一、事务标识 当事务开始时，事务管理器会为其分配一个事务标识（txid）的唯一标识符。 PostgreSQL有三个特殊txid:  0标识无效的txid； 1表示初始启动的txid，仅用于数据库集群的初始化过程； 2表示冻结的txid。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wangjie-star.github.io/images/tuple.png">
+<meta property="og:image" content="https://wangjie-star.github.io/images/tuple_update.png">
+<meta property="og:image" content="https://wangjie-star.github.io/images/tuple_delete.png">
+<meta property="og:image" content="https://wangjie-star.github.io/images/snapshot.png">
+<meta property="og:image" content="https://wangjie-star.github.io/images/snapshot_trans.png">
+<meta property="article:published_time" content="2023-02-07T09:13:15.000Z">
+<meta property="article:modified_time" content="2023-02-08T13:28:21.415Z">
+<meta property="article:author" content="Jugier Wang">
+<meta property="article:tag" content="DBMS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wangjie-star.github.io/images/tuple.png">
+
+
+<link rel="canonical" href="https://wangjie-star.github.io/13ddc1c017f3/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wangjie-star.github.io/13ddc1c017f3/","path":"13ddc1c017f3/","title":"PostgreSQL-并发控制"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入查看密码') !== ''){
+                alert('密码不正确,请询问主编大大！');
+                history.back();
+            }
+        }
+    })();
+</script>
+<title>PostgreSQL-并发控制 | Jugier's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Jugier's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">天可补，海可填，南山可移。<br>日月既往，不可复追。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-books"><a href="/books/" rel="section"><i class="fa fa-book fa-fw"></i>书单</a></li><li class="menu-item menu-item-tools"><a href="/tools/" rel="section"><i class="fa fa-tools fa-fw"></i>工具</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%BA%8B%E5%8A%A1%E6%A0%87%E8%AF%86"><span class="nav-text">一、事务标识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%85%83%E7%BB%84%E7%BB%93%E6%9E%84"><span class="nav-text">二、元组结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%85%83%E7%BB%84%E7%9A%84%E5%A2%9E%E3%80%81%E5%88%A0%E3%80%81%E6%94%B9"><span class="nav-text">三、元组的增、删、改</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E6%9B%B4%E6%96%B0%E5%85%83%E7%BB%84"><span class="nav-text">1、更新元组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%88%A0%E9%99%A4%E5%85%83%E7%BB%84"><span class="nav-text">2、删除元组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%8F%90%E4%BA%A4%E6%97%A5%E5%BF%97%EF%BC%88clog%EF%BC%89"><span class="nav-text">四、提交日志（clog）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E4%BA%8B%E5%8A%A1%E7%8A%B6%E6%80%81"><span class="nav-text">1、事务状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E4%BA%8B%E5%8A%A1%E7%89%B9%E6%80%A7"><span class="nav-text">2、事务特性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BA%8B%E5%8A%A1%E5%BF%AB%E7%85%A7"><span class="nav-text">五、事务快照</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E5%BF%AB%E7%85%A7%E5%AE%9A%E4%B9%89"><span class="nav-text">1、快照定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%BF%AB%E7%85%A7%E4%B8%8E%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="nav-text">2、快照与隔离级别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%8F%AF%E8%A7%81%E6%80%A7%E6%A3%80%E6%9F%A5"><span class="nav-text">六、可见性检查</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jugier Wang"
+      src="/images/avatar_2.jpg">
+  <p class="site-author-name" itemprop="name">Jugier Wang</p>
+  <div class="site-description" itemprop="description">山不让尘，川不辞盈。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wangjie-star" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wangjie-star" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jugier@outlook.com" title="E-Mail → mailto:jugier@outlook.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://postgres.cn/docs/14/sql-commands.html" title="http:&#x2F;&#x2F;postgres.cn&#x2F;docs&#x2F;14&#x2F;sql-commands.html" rel="noopener" target="_blank">PostgreSQL中文手册</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://python3-cookbook.readthedocs.io/zh_CN/latest/index.html#" title="https:&#x2F;&#x2F;python3-cookbook.readthedocs.io&#x2F;zh_CN&#x2F;latest&#x2F;index.html#" rel="noopener" target="_blank">Python3-cookbook</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://chanshiyu.com/#/" title="https:&#x2F;&#x2F;chanshiyu.com&#x2F;#&#x2F;" rel="noopener" target="_blank">蟬時雨</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://aciano.top/" title="https:&#x2F;&#x2F;aciano.top&#x2F;" rel="noopener" target="_blank">Aciano</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wangjie-star.github.io/13ddc1c017f3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar_2.jpg">
+      <meta itemprop="name" content="Jugier Wang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jugier's Blog">
+      <meta itemprop="description" content="山不让尘，川不辞盈。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="PostgreSQL-并发控制 | Jugier's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PostgreSQL-并发控制
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-02-07 17:13:15" itemprop="dateCreated datePublished" datetime="2023-02-07T17:13:15+08:00">2023-02-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-02-08 21:28:21" itemprop="dateModified" datetime="2023-02-08T21:28:21+08:00">2023-02-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PostgreSQL/" itemprop="url" rel="index"><span itemprop="name">PostgreSQL</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="一、事务标识">一、事务标识</h2>
+<p>当事务开始时，事务管理器会为其分配一个事务标识（txid）的唯一标识符。</p>
+<p>PostgreSQL有三个特殊txid:</p>
+<ul>
+<li>0标识无效的txid；</li>
+<li>1表示初始启动的txid，仅用于数据库集群的初始化过程；</li>
+<li>2表示冻结的txid。</li>
+</ul>
+<span id="more"></span>
+<p>txid在逻辑上是无限的，但实际系统的txid空间不足（4B整型的取值空间大小约42亿），因此Postgresql将txid空间视为一个环。对于某个txid，其前21亿个txid属于过去，其后约21亿个txid属于未来。</p>
+<h2 id="二、元组结构">二、元组结构</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">HeapTupleFields</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	TransactionId t_xmin;		<span class="comment">/* inserting xact ID; 插入事务的ID */</span></span><br><span class="line">	TransactionId t_xmax;		<span class="comment">/* deleting or locking xact ID; 删除或锁定事务的ID */</span></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		CommandId	t_cid;		<span class="comment">/* inserting or deleting command ID, or both; 插入或删除的命令ID */</span></span><br><span class="line">		TransactionId t_xvac;	<span class="comment">/* old-style VACUUM FULL xact ID; 老式VACUUM FULL的事务ID */</span></span><br><span class="line">	&#125;			t_field3;</span><br><span class="line">&#125; HeapTupleFields;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">HeapTupleHeaderData</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		HeapTupleFields t_heap;</span><br><span class="line">		DatumTupleFields t_datum;</span><br><span class="line">	&#125;			t_choice;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//当前元组或更新元组的TID</span></span><br><span class="line">	ItemPointerData t_ctid;		<span class="comment">/* current TID of this or newer tuple (or a</span></span><br><span class="line"><span class="comment">								 * speculative insertion token) */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Fields below here must match MinimalTupleData! */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FIELDNO_HEAPTUPLEHEADERDATA_INFOMASK2 2</span></span><br><span class="line">	uint16		t_infomask2;	<span class="comment">/* number of attributes + various flags */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FIELDNO_HEAPTUPLEHEADERDATA_INFOMASK 3</span></span><br><span class="line">	uint16		t_infomask;		<span class="comment">/* various flag bits, see below */</span> <span class="comment">//主要保存了事务的状态标记位</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FIELDNO_HEAPTUPLEHEADERDATA_HOFF 4</span></span><br><span class="line">	uint8		t_hoff;			<span class="comment">/* sizeof header incl. bitmap, padding */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* ^ - 23 bytes - ^ */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> FIELDNO_HEAPTUPLEHEADERDATA_BITS 5</span></span><br><span class="line">	bits8		t_bits[FLEXIBLE_ARRAY_MEMBER];	<span class="comment">/* bitmap of NULLs */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* MORE DATA FOLLOWS AT END OF STRUCT */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<p><img data-src="/images/tuple.png" alt=""></p>
+<p>t_xmin：代表插入此元组的事务xid；</p>
+<p>t_xmax：代表更新或者删除此元组的事务xid，如果该元组插入后未进行更新或者删除，t_xmax=0；</p>
+<p>t_cid：command id，代表在当前事务中，已经执行过多少条sql，例如执行第一条sql时cid=0，执行第二条sql时cid=1；</p>
+<p>t_ctid：保存着指向自身或者新元组的元组标识（tid），由两个数字组成，第一个数字代表物理块号，或者叫页面号，第二个数字代表元组号。在元组更新后tid指向新版本的元组，否则指向自己，这样其实就形成了新旧元组之间的“元组链”，这个链在元组查找和定位上起着重要作用。</p>
+<h2 id="三、元组的增、删、改">三、元组的增、删、改</h2>
+<h3 id="1、更新元组">1、更新元组</h3>
+<p><img data-src="/images/tuple_update.png" alt=""></p>
+<p>左图是一条新插入的元组，可以看到元组是xid=100的事务插入的，没有进行更新，所以t_xmax=0，同时t_ctid指向自己，0号页面的第一号元组。<br>
+右图是发生xid=101的事务更新该元组后的状态，更新在pg里相当于插入一条新元组，原来的元组的t_xmax变为了更新这条事务的xid=101，同时t_ctid指针指向了新插入的元组（0,2），0号页面第二号元组，第二号元组的t_xmin=101（插入该元组的xid），t_ctid=（0,2），没有发生更新，指向自己。</p>
+<h3 id="2、删除元组">2、删除元组</h3>
+<p><img data-src="/images/tuple_delete.png" alt=""></p>
+<p>上图代表该元组被xid=102的事务删除，将t_xmax设置为删除事务的xid，t_ctid指向自己。</p>
+<h2 id="四、提交日志（clog）">四、提交日志（clog）</h2>
+<p>Postgresql在提交日志（CLOG）中保存事务的状态。CLOG分配于共享内存中，并用于事务处理过程的全过程。</p>
+<p>每次事务提交和回滚的时候，都需要更新该状态（调用CommitTransactionCommand(void)），PostgreSQL服务器访问该文件确定事务的状态，保存在pg_xact目录中，每个文件大小为256KB，每个事务2位（bit），故1个文件可以包含131072个事务。对于第一次修改的数据行来说，因为事务状态存储在clog中，所以修改后第一次判断行的可见性需要通过访问clog来确定，而访问clog是一个非常耗费性能的过程，</p>
+<h3 id="1、事务状态">1、事务状态</h3>
+<ul>
+<li>IN_PROGRESS</li>
+<li>COMMITTED</li>
+<li>ABORTED</li>
+<li>SUB_COMMITTED</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Possible transaction statuses --- note that all-zeroes is the initial</span></span><br><span class="line"><span class="comment"> * state.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A &quot;subcommitted&quot; transaction is a committed subtransaction whose parent</span></span><br><span class="line"><span class="comment"> * hasn&#x27;t committed or aborted yet.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> XidStatus;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TRANSACTION_STATUS_IN_PROGRESS		0x00</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TRANSACTION_STATUS_COMMITTED		0x01</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TRANSACTION_STATUS_ABORTED			0x02</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TRANSACTION_STATUS_SUB_COMMITTED	0x03</span></span><br></pre></td></tr></table></figure>
+<h3 id="2、事务特性">2、事务特性</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* We need two bits per xact, so four xacts fit in a byte */</span></span><br><span class="line"><span class="comment">/* pg中通过2个bit位来标识4种事务状态(0、1、2、3)，那么1个字节便可以存储4个事务，对于1个8k的page则可以存储8k * 4 = 32k个事务。 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLOG_BITS_PER_XACT	2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLOG_XACTS_PER_BYTE 4</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLOG_XACTS_PER_PAGE (BLCKSZ * CLOG_XACTS_PER_BYTE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLOG_XACT_BITMASK	((1 &lt;&lt; CLOG_BITS_PER_XACT) - 1)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TransactionIdToPage(xid)	((xid) / (TransactionId) CLOG_XACTS_PER_PAGE)  <span class="comment">// 通过xid获取页</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TransactionIdToPgIndex(xid) ((xid) % (TransactionId) CLOG_XACTS_PER_PAGE)  <span class="comment">// 获取xid在页中的索引</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TransactionIdToByte(xid)	(TransactionIdToPgIndex(xid) / CLOG_XACTS_PER_BYTE)  <span class="comment">// 获取xid在页中的位置（第几个字节）</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TransactionIdToBIndex(xid)	((xid) % (TransactionId) CLOG_XACTS_PER_BYTE) <span class="comment">// 获取xid在页中的位置（在某个字节中位于第几个事务）</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>事务id并不是在事务开始时就会被分配，而是当事务进行了数据修改之类的操作时才会分配xid，而当事务提交或回滚时，其事务状态便会被写入clog中。</p>
+</li>
+<li>
+<p>前一个事务所有修改的数据，它没有在提交或者回滚的当时改掉所有的修改标记，而是等到下次查询时进行修改（为了提升性能）。</p>
+</li>
+</ul>
+<h2 id="五、事务快照">五、事务快照</h2>
+<h3 id="1、快照定义">1、快照定义</h3>
+<p>事务快照在postgresql中的文本表示格式为xmin:xmax:xip_list。100:100：意味着txid &lt; 100的事务处于非活跃状态，而txid ≥ 100的事务处于活跃状态。</p>
+<p><img data-src="/images/snapshot.png" alt=""></p>
+<p><strong>100:100：含义如下</strong></p>
+<ul>
+<li>xmin=100，所以txid&lt;100的事务均不活跃</li>
+<li>xmax=100，所以txid&gt;=100的事务均活跃或未启动</li>
+<li>xip_list为空，表示[xmin,xmax)范围内无活跃事务</li>
+</ul>
+<p><strong>100:104:100,102含义如下</strong></p>
+<ul>
+<li>xmin=100，所以txid&lt;100的事务均不活跃</li>
+<li>xmax=104，所以txid&gt;=104的事务均活跃或未启动</li>
+<li>xip_list为100,102，表示[xmin,xmax)范围内100,102为活跃事务</li>
+</ul>
+<h3 id="2、快照与隔离级别">2、快照与隔离级别</h3>
+<p>pg会根据不同隔离级别设置，获取不同时刻的快照：</p>
+<ul>
+<li><strong>已提交读：在该事务的每条SQL执行之前都会重新获取一次快照</strong></li>
+<li><strong>可重复读和可串行化：该事务只在第一条SQL执行之前获取一次快照</strong></li>
+</ul>
+<p><img data-src="/images/snapshot_trans.png" alt=""></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快照相关的数据结构</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">SnapshotData</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	SnapshotType snapshot_type; <span class="comment">/* type of snapshot; 事务类型 */</span> </span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * The remaining fields are used only for MVCC snapshots, and are normally</span></span><br><span class="line"><span class="comment">	 * just zeroes in special snapshots.  (But xmin and xmax are used</span></span><br><span class="line"><span class="comment">	 * specially by HeapTupleSatisfiesDirty, and xmin is used specially by</span></span><br><span class="line"><span class="comment">	 * HeapTupleSatisfiesNonVacuumable.)</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * An MVCC snapshot can never see the effects of XIDs &gt;= xmax. It can see</span></span><br><span class="line"><span class="comment">	 * the effects of all older XIDs except those listed in the snapshot. xmin</span></span><br><span class="line"><span class="comment">	 * is stored as an optimization to avoid needing to search the XID arrays</span></span><br><span class="line"><span class="comment">	 * for most tuples.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	TransactionId xmin;			<span class="comment">/* all XID &lt; xmin are visible to me; 若事务ID小于xmin，则对当前事务可见 */</span></span><br><span class="line">	TransactionId xmax;			<span class="comment">/* all XID &gt;= xmax are invisible to me; 若事务ID大于xmax，则对当前事务不可见 */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * For normal MVCC snapshot this contains the all xact IDs that are in</span></span><br><span class="line"><span class="comment">	 * progress, unless the snapshot was taken during recovery in which case</span></span><br><span class="line"><span class="comment">	 * it&#x27;s empty. For historic MVCC snapshots, the meaning is inverted, i.e.</span></span><br><span class="line"><span class="comment">	 * it contains *committed* transactions between xmin and xmax.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * note: all ids in xip[] satisfy xmin &lt;= xip[i] &lt; xmax</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	TransactionId *xip;  <span class="comment">//  快照生成时对应的活跃事务列表</span></span><br><span class="line">	uint32		xcnt;			<span class="comment">/* # of xact ids in xip[]; xip数组大小 */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * For non-historic MVCC snapshots, this contains subxact IDs that are in</span></span><br><span class="line"><span class="comment">	 * progress (and other transactions that are in progress if taken during</span></span><br><span class="line"><span class="comment">	 * recovery). For historic snapshot it contains *all* xids assigned to the</span></span><br><span class="line"><span class="comment">	 * replayed transaction, including the toplevel xid.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * note: all ids in subxip[] are &gt;= xmin, but we don&#x27;t bother filtering</span></span><br><span class="line"><span class="comment">	 * out any that are &gt;= xmax</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	TransactionId *subxip; <span class="comment">// 活跃的子事务列表</span></span><br><span class="line">	int32		subxcnt;		<span class="comment">/* # of xact ids in subxip[]; sub xip数组大小 */</span></span><br><span class="line">	<span class="type">bool</span>		suboverflowed;	<span class="comment">/* has the subxip array overflowed? ;当子事务过多时，数组有可能overflow */</span></span><br><span class="line"></span><br><span class="line">	<span class="type">bool</span>		takenDuringRecovery;	<span class="comment">/* recovery-shaped snapshot? */</span></span><br><span class="line">	<span class="type">bool</span>		copied;			<span class="comment">/* false if it&#x27;s a static snapshot; 如果是静态快照则为false */</span></span><br><span class="line"></span><br><span class="line">	CommandId	curcid;			<span class="comment">/* in my xact, CID &lt; curcid are visible */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * An extra return value for HeapTupleSatisfiesDirty, not used in MVCC</span></span><br><span class="line"><span class="comment">	 * snapshots.</span></span><br><span class="line"><span class="comment">	 * </span></span><br><span class="line"><span class="comment">	 * HeapTupleSatisfiesDirty使用的一个变量，在判断可见性的同时，会借助这</span></span><br><span class="line"><span class="comment">	 * 个变量将元组上的speculativeToken返回给上层</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	uint32		speculativeToken;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * For SNAPSHOT_NON_VACUUMABLE (and hopefully more in the future) this is</span></span><br><span class="line"><span class="comment">	 * used to determine whether row could be vacuumed.</span></span><br><span class="line"><span class="comment">     * 元组是否可vacuum（用于SNAPSHOT_NON_VACUUMABLE状态）</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">GlobalVisState</span> *<span class="title">vistest</span>;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Book-keeping information, used by the snapshot manager</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	uint32		active_count;	<span class="comment">/* refcount on ActiveSnapshot stack */</span></span><br><span class="line">	uint32		regd_count;		<span class="comment">/* refcount on RegisteredSnapshots */</span></span><br><span class="line">	pairingheap_node ph_node;	<span class="comment">/* link in the RegisteredSnapshots heap */</span></span><br><span class="line"></span><br><span class="line">	TimestampTz whenTaken;		<span class="comment">/* timestamp when snapshot was taken */</span></span><br><span class="line">	XLogRecPtr	lsn;			<span class="comment">/* position in the WAL stream when taken */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * The transaction completion count at the time GetSnapshotData() built</span></span><br><span class="line"><span class="comment">	 * this snapshot. Allows to avoid re-computing static snapshots when no</span></span><br><span class="line"><span class="comment">	 * transactions completed since the last GetSnapshotData().</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	uint64		snapXactCompletionCount;</span><br><span class="line">&#125; SnapshotData;</span><br></pre></td></tr></table></figure>
+<h2 id="六、可见性检查">六、可见性检查</h2>
+<p><strong>事务并发可能出现的现象：</strong></p>
+<ul>
+<li>
+<p>脏读：某一事务读取了另一个事务未提交的脏数据。</p>
+</li>
+<li>
+<p>幻读：读取了前一事务提交的数据（针对的是一批数据整体，比如数据的个数 ）。</p>
+</li>
+<li>
+<p>不可重复读：读取了前一事务提交的数据（查询的都是 同一个数据项 ）。</p>
+</li>
+</ul>
+<p><strong>事务隔离级别：</strong></p>
+<ul>
+<li>READ UNCOMMITTED（读未提交）------ postgresql不存在这个隔离级别，所以不会出现脏读的现象。</li>
+<li>READ COMMITTED（读已提交）------ 可能会发生幻读和不可重复读。</li>
+<li>REPEATABLE READ（可重复读）------ 不会发生幻读和不可重复读（标准sql事务隔离级别允许幻读）。</li>
+<li>SERIALIZABLE（序列化）------ 不会发生幻读和不可重复读。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读未提交</td>
+<td>可能</td>
+<td>可能</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>读已提交</td>
+<td>不可能</td>
+<td>可能</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>可重复读</td>
+<td>不可能</td>
+<td>不可能</td>
+<td>Allowed, but not in PG</td>
+</tr>
+<tr>
+<td>可串行化</td>
+<td>不可能</td>
+<td>不可能</td>
+<td>不可能</td>
+</tr>
+</tbody>
+</table>
+<p><strong>元组的可见性:</strong></p>
+<p>确定一条元组是否对一个事务可见，可见性检查规则会用到元组的t_xmin和t_xmax,提交日志ClOG，以及已获取的事务快照。</p>
+<p>t_xmin状态为 ABORTED的元组始终不可见</p>
+<p>t_xmin状态为IN_PROGRESS的元组基本上是不可见的（对自身事务可见）</p>
+<p>t_xmin状态为COMMITTED的元组是可见的</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Jugier Wang
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://wangjie-star.github.io/13ddc1c017f3/" title="PostgreSQL-并发控制">https://wangjie-star.github.io/13ddc1c017f3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/DBMS/" rel="tag"><i class="fa fa-tag"></i> DBMS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/b3574ee3d8f5/" rel="prev" title="PostgreSQL-xlog">
+                  <i class="fa fa-chevron-left"></i> PostgreSQL-xlog
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/0f842baa5beb/" rel="next" title="PostgreSQL-调试initdb">
+                  PostgreSQL-调试initdb <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+<!-- 文章结束表示语-->
+    <div>
+      
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+      
+    </div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+<!--
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jugier Wang</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">21k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">19 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+
+    </div>
+  </footer>
+-->
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/wangjie-star" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="https://cdnjs.cloudflare.com/ajax/libs/ribbon.js/1.0.2/ribbon.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+
+
+
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/pjax.js"></script>
+
+<script src="/js/code-unfold.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://wangjie-star.github.io/13ddc1c017f3/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wangjie-star","repo":"wangjie-star.github.io","client_id":"a9ec7557402cca36f895","client_secret":"debbd767d2b735d34c48b5188c1e77ebb96a4b37","admin_user":"wangjie-star","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"89a028ac373d9cce7c4caf1778a20b2e"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+ 
+</body>
+</html>
