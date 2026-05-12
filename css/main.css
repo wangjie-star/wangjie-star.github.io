@@ -2884,10 +2884,7 @@ mark.search-keyword {
   }
 }
 body {
-  background: url("/images/background.png");
-  background-repeat: repeat;
-  background-attachment: fixed;
-  background-position: 100% 100%;
+  background: var(--body-bg-color);
 }
 .content-wrap {
   opacity: 0.8;
