@@ -119,3 +119,4 @@ itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/resetAndRedirect?dsf=1434
 ## 九、一句话流程
 
 准备新邮箱、手机号和土区地址，在网页无痕注册土区 Apple ID；注册后先退出 App Store 账号，用 Safari 打开土区跳转链接切换商店区域，再登录新 Apple ID；之后用土区礼品卡充值，并尽量在 iPhone 或 iPad 上完成 ChatGPT Plus 等订阅。
+
