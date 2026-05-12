@@ -2884,7 +2884,11 @@ mark.search-keyword {
   }
 }
 body {
-  background: var(--body-bg-color);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,0.95), rgba(255,255,255,0) 28%),
+    radial-gradient(circle at 82% 18%, rgba(214,226,232,0.55), rgba(255,255,255,0) 30%),
+    linear-gradient(135deg, #f6f7f4 0%, #eef2f2 48%, #f8f6f1 100%);
+  background-attachment: fixed;
 }
 .content-wrap {
   opacity: 0.8;
